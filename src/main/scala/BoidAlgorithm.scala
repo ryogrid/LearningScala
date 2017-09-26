@@ -1,4 +1,4 @@
-import javax.swing.{JFrame, JPanel}
+import javax.swing.{JFrame, JPanel, WindowConstants}
 import java.awt.{BorderLayout, Graphics}
 import scala.util.Random
 import java.util.{Timer, TimerTask}
@@ -16,24 +16,27 @@ class MainFrame() extends JFrame{
   val contentPane = this.getContentPane()
   contentPane.add(panel, BorderLayout.CENTER)
   this.setBounds(100, 100, BoidAlgorithm.SCREEN_SIZE, BoidAlgorithm.SCREEN_SIZE)
-  this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
   this.setVisible(true)
 }
 
 class Tori(var x: Double, var y: Double, var vx:Double, var vy:Double)
 
 class BoidPanel() extends JPanel{
-  val PAINT_PERIOD = 1
-  val NUM_BOIDS = 50            // ボイドの数
-  val BOID_SIZE = 3              // ボイドの大きさ
-  val MAX_SPEED = 100
+  val FPS = 60
+  val NUM_BOIDS = 100            // ボイドの数
+  val BOID_SIZE = 5              // ボイドの大きさ
+  val MAX_SPEED = 7
 
-  private var boids: Vector[Tori] = Vector[Tori]()
-  init_boids()
+  private var boids = Vector.empty[Tori]
+
+  initBoids()
+
   private val t = new Timer()
-  t.schedule(new RepaintTimer(), 0, PAINT_PERIOD)
+  t.schedule(new RepaintTimer(), 0, 1000 / FPS)
 
-  private def init_boids(): Unit = {
+  private def initBoids(): Unit = {
+    boids = Vector.empty[Tori]
     val r = new Random()
     for(index <- 1 to NUM_BOIDS){
       val x = r.nextInt(BoidAlgorithm.SCREEN_SIZE)
@@ -51,6 +54,7 @@ class BoidPanel() extends JPanel{
   }
 
   override def paint(g: Graphics): Unit = {
+    g.clearRect(0, 0, BoidAlgorithm.SCREEN_SIZE, BoidAlgorithm.SCREEN_SIZE)
     for(boid <- boids){
       g.drawOval(boid.x.asInstanceOf[Int], boid.y.asInstanceOf[Int], BOID_SIZE, BOID_SIZE)
     }
@@ -66,22 +70,22 @@ class BoidPanel() extends JPanel{
       rule3(n)
       // limit speed
       var b: Tori = boids(n)
-      var speed = Math.sqrt(b.vx*b.vx + b.vy*b.vy);
+      val speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy)
       if (speed >= MAX_SPEED) {
-        var r: Double = MAX_SPEED / speed;
+        val r = MAX_SPEED / speed
         b.vx *= r
         b.vy *= r
-      }
-      // 壁の外に出てしまった場合速度を内側へ向ける
-      if (b.x<0 && b.vx<0 || b.x>BoidAlgorithm.SCREEN_SIZE && b.vx>0){
-        b.vx *= -1
-      }
-      if (b.y<0 && b.vy<0 || b.y>BoidAlgorithm.SCREEN_SIZE && b.vy>0){
-        b.vy *= -1
       }
       // 座標の更新
       b.x += b.vx
       b.y += b.vy
+      // 壁の外に出てしまった場合速度を内側へ向ける
+      if ((b.x < 0 && b.vx < 0) || (b.x > BoidAlgorithm.SCREEN_SIZE && b.vx > 0)){
+        b.vx *= -1
+      }
+      if ((b.y < 0 && b.vy < 0) || (b.y > BoidAlgorithm.SCREEN_SIZE && b.vy > 0)){
+        b.vy *= -1
+      }
     }
 
   }
@@ -90,22 +94,22 @@ class BoidPanel() extends JPanel{
     // ボイドは群れの中心へ向かおうとする
 
     // 自分を除いた群れの真ん中
-    var c_x : Double = 0
-    var c_y : Double = 0
-    for (n <- 0 until NUM_BOIDS if n!= index) {
+    var c_x = 0.0
+    var c_y = 0.0
+    for (n <- 0 until NUM_BOIDS if n != index) {
       c_x += boids(n).x
       c_y += boids(n).y
     }
     c_x /= NUM_BOIDS - 1
     c_y /= NUM_BOIDS - 1
-    boids(index).vx += (c_x-boids(index).x) / 1
-    boids(index).vy += (c_y-boids(index).y) / 1
+    boids(index).vx += (c_x - boids(index).x) / 100
+    boids(index).vy += (c_y - boids(index).y) / 100
   }
 
   private def rule2(index: Int): Unit = {
     // ボイドは他のボイドと最低限の距離を取ろうとする
     for (n <- 0 until NUM_BOIDS if n != index) {
-        var d = getDistance(boids(n), boids(index)) // ボイド間の距離
+        val d = distance(boids(n), boids(index)) // ボイド間の距離
         if (d < 5) {
           boids(index).vx -= boids(n).x - boids(index).x
           boids(index).vy -= boids(n).y - boids(index).y
@@ -115,23 +119,21 @@ class BoidPanel() extends JPanel{
 
   private def rule3(index: Int): Unit = {
     // ボイドは群れの平均速度ベクトルに合わせようとする
-    var pv_x : Double = 0
-    var pv_y : Double = 0 // 自分を除いた群れの平均速度
+    var pv_x = 0.0
+    var pv_y = 0.0 // 自分を除いた群れの平均速度
     for (n <- 0 until NUM_BOIDS if n != index) {
       pv_x += boids(n).vx
       pv_y += boids(n).vy
     }
     pv_x /= NUM_BOIDS - 1
     pv_y /= NUM_BOIDS - 1
-//    boids(index).vx += (pv_x-boids(index).vx) / 128
-//    boids(index).vy += (pv_y-boids(index).vy) / 128
-    boids(index).vx += pv_x
-    boids(index).vy += pv_y
+    boids(index).vx += (pv_x - boids(index).vx) / 8
+    boids(index).vy += (pv_y - boids(index).vy) / 8
   }
 
-  private def getDistance(a: Tori, b: Tori): Double =  {
+  private def distance(a: Tori, b: Tori): Double =  {
     val x = a.x - b.x
-    val y = a.y - a.y
+    val y = a.y - b.y
     return Math.sqrt(x * x + y * y)
   }
 }
