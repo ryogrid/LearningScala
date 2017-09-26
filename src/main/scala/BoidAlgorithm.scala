@@ -24,7 +24,7 @@ class Tori(var x: Double, var y: Double, var vx:Double, var vy:Double)
 
 class BoidPanel() extends JPanel{
   val PAINT_PERIOD = 1
-  val NUM_BOIDS = 300            // ボイドの数
+  val NUM_BOIDS = 50            // ボイドの数
   val BOID_SIZE = 3              // ボイドの大きさ
   val MAX_SPEED = 100
 
@@ -98,8 +98,8 @@ class BoidPanel() extends JPanel{
     }
     c_x /= NUM_BOIDS - 1
     c_y /= NUM_BOIDS - 1
-    boids(index).vx += (c_x-boids(index).x) / 100
-    boids(index).vy += (c_y-boids(index).y) / 100
+    boids(index).vx += (c_x-boids(index).x) / 1
+    boids(index).vy += (c_y-boids(index).y) / 1
   }
 
   private def rule2(index: Int): Unit = {
@@ -123,8 +123,10 @@ class BoidPanel() extends JPanel{
     }
     pv_x /= NUM_BOIDS - 1
     pv_y /= NUM_BOIDS - 1
-    boids(index).vx += (pv_x-boids(index).vx) / 128
-    boids(index).vy += (pv_y-boids(index).vy) / 128
+//    boids(index).vx += (pv_x-boids(index).vx) / 128
+//    boids(index).vy += (pv_y-boids(index).vy) / 128
+    boids(index).vx += pv_x
+    boids(index).vy += pv_y
   }
 
   private def getDistance(a: Tori, b: Tori): Double =  {
