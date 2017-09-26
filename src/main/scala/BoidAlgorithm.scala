@@ -123,8 +123,8 @@ class BoidPanel() extends JPanel{
     }
     pv_x /= NUM_BOIDS - 1
     pv_y /= NUM_BOIDS - 1
-    boids(index).vx += (pv_x-boids(index).vx) / 32
-    boids(index).vy += (pv_y-boids(index).vy) / 32
+    boids(index).vx += (pv_x-boids(index).vx) / 128
+    boids(index).vy += (pv_y-boids(index).vy) / 128
   }
 
   private def getDistance(a: Tori, b: Tori): Double =  {
