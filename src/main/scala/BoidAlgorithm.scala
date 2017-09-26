@@ -23,10 +23,10 @@ class MainFrame() extends JFrame{
 class Tori(var x: Double, var y: Double, var vx:Double, var vy:Double)
 
 class BoidPanel() extends JPanel{
-  val PAINT_PERIOD = 100
+  val PAINT_PERIOD = 1
   val NUM_BOIDS = 300            // ボイドの数
   val BOID_SIZE = 3              // ボイドの大きさ
-  val MAX_SPEED = 5
+  val MAX_SPEED = 100
 
   private var boids: Vector[Tori] = Vector[Tori]()
   init_boids()
@@ -73,8 +73,12 @@ class BoidPanel() extends JPanel{
         b.vy *= r
       }
       // 壁の外に出てしまった場合速度を内側へ向ける
-      if (b.x<0 && b.vx<0 || b.x>BoidAlgorithm.SCREEN_SIZE && b.vx>0) b.vx *= -1
-      if (b.y<0 && b.vy<0 || b.y>BoidAlgorithm.SCREEN_SIZE && b.vy>0) b.vy *= -1
+      if (b.x<0 && b.vx<0 || b.x>BoidAlgorithm.SCREEN_SIZE && b.vx>0){
+        b.vx *= -1
+      }
+      if (b.y<0 && b.vy<0 || b.y>BoidAlgorithm.SCREEN_SIZE && b.vy>0){
+        b.vy *= -1
+      }
       // 座標の更新
       b.x += b.vx
       b.y += b.vy
@@ -94,15 +98,15 @@ class BoidPanel() extends JPanel{
     }
     c_x /= NUM_BOIDS - 1
     c_y /= NUM_BOIDS - 1
-    boids(index).vx += (c_x-boids(index).x) / 100.0
-    boids(index).vy += (c_y-boids(index).y) / 100.0
+    boids(index).vx += (c_x-boids(index).x) / 100
+    boids(index).vy += (c_y-boids(index).y) / 100
   }
 
   private def rule2(index: Int): Unit = {
     // ボイドは他のボイドと最低限の距離を取ろうとする
-    for (n <- 0 until BOID_SIZE if n != index) {
+    for (n <- 0 until NUM_BOIDS if n != index) {
         var d = getDistance(boids(n), boids(index)) // ボイド間の距離
-        if (d < 30) {
+        if (d < 5) {
           boids(index).vx -= boids(n).x - boids(index).x
           boids(index).vy -= boids(n).y - boids(index).y
         }
@@ -113,14 +117,14 @@ class BoidPanel() extends JPanel{
     // ボイドは群れの平均速度ベクトルに合わせようとする
     var pv_x : Double = 0
     var pv_y : Double = 0 // 自分を除いた群れの平均速度
-    for (n <- 0 until BOID_SIZE if n != index) {
+    for (n <- 0 until NUM_BOIDS if n != index) {
       pv_x += boids(n).vx
       pv_y += boids(n).vy
     }
-    pv_x /= boids.length - 1
-    pv_y /= boids.length - 1
-    boids(index).vx += (pv_x-boids(index).vx) / 2
-    boids(index).vy += (pv_y-boids(index).vy) / 2
+    pv_x /= NUM_BOIDS - 1
+    pv_y /= NUM_BOIDS - 1
+    boids(index).vx += (pv_x-boids(index).vx) / 32
+    boids(index).vy += (pv_y-boids(index).vy) / 32
   }
 
   private def getDistance(a: Tori, b: Tori): Double =  {
