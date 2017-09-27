@@ -69,7 +69,7 @@ class BoidPanel() extends JPanel{
       rule2(n)
       rule3(n)
       // limit speed
-      var b: Tori = boids(n)
+      val b: Tori = boids(n)
       val speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy)
       if (speed >= MAX_SPEED) {
         val r = MAX_SPEED / speed
@@ -134,6 +134,6 @@ class BoidPanel() extends JPanel{
   private def distance(a: Tori, b: Tori): Double =  {
     val x = a.x - b.x
     val y = a.y - b.y
-    return Math.sqrt(x * x + y * y)
+    Math.sqrt(x * x + y * y)
   }
 }
