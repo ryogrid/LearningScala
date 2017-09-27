@@ -28,21 +28,18 @@ class BoidPanel() extends JPanel{
   val BOID_SIZE = 5              // ボイドの大きさ
   val MAX_SPEED = 7
 
-  private var boids = Vector.empty[Tori]
-
-  initBoids()
+  private var boids = initBoids()
 
   private val t = new Timer()
   t.schedule(new RepaintTimer(), 0, 1000 / FPS)
 
-  private def initBoids(): Unit = {
+  private def initBoids(): Vector[Tori] = {
     boids = Vector.empty[Tori]
     val r = new Random()
-    for(index <- 1 to NUM_BOIDS){
+    (1 to NUM_BOIDS).foldLeft(boids){ (seq ,index) =>
       val x = r.nextInt(BoidAlgorithm.SCREEN_SIZE)
       val y = r.nextInt(BoidAlgorithm.SCREEN_SIZE)
-      val boid = new Tori(x, y, 0, 0)
-      boids = boids :+ boid
+      seq :+ new Tori(x, y, 0, 0)
     }
   }
 
